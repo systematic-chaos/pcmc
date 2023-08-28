@@ -76,7 +76,7 @@ int main(void) {
 
     // Copy the result vector from the Device's memory to the Host's memory
     printf("Copy the output data from the Device's memory to the Host's memory\n");
-    cudaMempcy(h_C, d_C, size, cudaMempcyDeviceToHost);
+    cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
 
     // Free memory in the Device
     cudaFree(d_A);
