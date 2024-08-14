@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include <cuda_runtime.h>
+#include "ctimer.h"
 
 #define RAND_FLOAT() (rand() / (float)RAND_MAX)
 
@@ -36,15 +38,17 @@ float checkMatSum(const float* A, const float* B, const float* C) {
 
 // Main program in the Host
 int main(void) {
+    double t1, t2, tucpu, tscpu;
     
     // Allocate memory in the Host for the input and output matrices
-    const size_t memorySize = M * N * sizeof(float);
+    const unsigned int numElements = M * N;
+    const size_t memorySize = numElements * sizeof(float);
     float *h_A = (float*)malloc(memorySize);
     float *h_B = (float*)malloc(memorySize);
     float *h_C = (float*)malloc(memorySize);
 
     // Initialize the input matrices in the Host
-    const unsigned int numElements = M * N;
+    srand(time(NULL));
     for (unsigned int ij = 0; ij < numElements; ij++) {
         h_A[ij] = RAND_FLOAT();
         h_B[ij] = RAND_FLOAT();
@@ -71,7 +75,10 @@ int main(void) {
     printf("Launching the CUDA Kernel with a %dx%d grid and %d threads per block.\n",
         blocksPerGrid.x, blocksPerGrid.y, threadsPerBlock);
     // Launch the CUDA Kernel `ex2MatSum`
+    ctimer(&t1, &tucpu, &tscpu);
     ex2MatSum<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C);
+    ctimer(&t2, &tucpu, &tscpu);
+    printf("GPU time:\t%.9f seconds\n", (float)(t2 - t1));
 
     // Copy the result output matrix from the Device's memory to the Host's
     cudaMemcpy(h_C, d_C, memorySize, cudaMemcpyDeviceToHost);
@@ -82,8 +89,11 @@ int main(void) {
     cudaFree(d_C);
 
     // Display result data
+    ctimer(&t1, &tucpu, &tscpu);
     float error = checkMatSum(h_A, h_B, h_C);
+    ctimer(&t2, &tucpu, &tscpu);
     printf("Cumulative error: %.4f\n", error);
+    printf("CPU time:\t%.9f seconds\n", (float)(t2 - t1));
 
     // Free memory in the Host
     free(h_A);

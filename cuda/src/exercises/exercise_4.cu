@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include <cuda_runtime.h>
+#include "ctimer.h"
 
 #define RAND_FLOAT() (rand() / (float)RAND_MAX)
 
@@ -32,6 +34,7 @@ float checkMatVecMult(const float* A, const float* B, const float* C) {
 
 // Main program in the Host
 int main(void) {
+    double t1, t2, tucpu, tscpu;
 
     // Allocate memory in the Host for the input matrices and vector, and the output matrix
     const size_t vectorMemorySize = N * sizeof(float);
@@ -41,6 +44,7 @@ int main(void) {
     float *h_C = (float*)malloc(matrixMemorySize);
 
     // Initialize the input matrix and vector in the Host
+    srand(time(NULL));
     for (unsigned int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
             h_A[i * M + j] = RAND_FLOAT();
@@ -64,7 +68,10 @@ int main(void) {
     printf("Multiplying a %dx%d matrix and a vector of %d elements.\n", M, N, N);
     printf("Launching the CUDA Kernel with %d blocks of %d threads each.\n",
         blocksPerGrid, threadsPerBlock);
+    ctimer(&t1, &tucpu, &tscpu);
     ex4MatVecMult<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C);
+    ctimer(&t2, &tucpu, &tscpu);
+    printf("GPU time:\t%.9f seconds\n", (float)(t2 - t1));
 
     // Copy the result output matrix from the Device's memory to the Host's
     cudaMemcpy(h_C, d_C, matrixMemorySize, cudaMemcpyDeviceToHost);
@@ -75,8 +82,11 @@ int main(void) {
     cudaFree(d_C);
 
     // Display result data
+    ctimer(&t1, &tucpu, &tscpu);
     float error = checkMatVecMult(h_A, h_B, h_C);
+    ctimer(&t2, &tucpu, &tscpu);
     printf("Cumulative error: %.4f\n", error);
+    printf("CPU time:\t%.9f seconds\n", (float)(t2 - t1));
 
     // Free memory in the Host
     free(h_A);

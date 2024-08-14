@@ -7,7 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include <cuda_runtime.h>
+#include "ctimer.h"
 
 #define RAND_FLOAT() (rand() / (float)RAND_MAX)
 
@@ -32,6 +34,7 @@ float checkSaxpy(const float* A, const float* B, const float* C) {
 
 // Main program in the Host
 int main(void) {
+    double t1, t2, tucpu, tscpu;
 
     // Allocate memory in the Host for the input and output vectors
     const size_t memorySize = N * sizeof(float);
@@ -40,6 +43,7 @@ int main(void) {
     float *h_C = (float*)malloc(memorySize);
     
     // Initialize the input vectors in the Host
+    srand(time(NULL));
     for (unsigned int i = 0; i < N; i++) {
         h_A[i] = RAND_FLOAT();
         h_B[i] = RAND_FLOAT();
@@ -61,7 +65,10 @@ int main(void) {
     printf("Saxpy with two vectors of %d elements each.\n", N);
     printf("Launching the CUDA Kernel with %d blocks of %d threads each.\n",
         blocksPerGrid, threadsPerBlock);
+    ctimer(&t1, &tucpu, &tscpu);
     ex3VecSaxpy<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C);
+    ctimer(&t2, &tucpu, &tscpu);
+    printf("GPU time:\t%.9f seconds\n", (float)(t2 - t1));
     
     // Copy the result output vector from the Device's memory to the Host's
     cudaMemcpy(h_C, d_C, memorySize, cudaMemcpyDeviceToHost);
@@ -72,8 +79,11 @@ int main(void) {
     cudaFree(d_C);
 
     // Display result data
+    ctimer(&t1, &tucpu, &tscpu);
     float error = checkSaxpy(h_A, h_B, h_C);
+    ctimer(&t2, &tucpu, &tscpu);
     printf("Cumulative error: %.4f\n", error);
+    printf("CPU time:\t%.9f seconds\n", (float)(t2 - t1));
 
     // Free memory in the Host
     free(h_A);
