@@ -14,4 +14,4 @@
 
 4. CUDA program that computes the product of a matrix of dimensions `m * n` and a vector with `n` real elements expressed in simple precision.
 
-5. CUDA program that computes the product of two matrices of `n * n` real elements expressed in simple precision.
+5. CUDA program that computes the product of two matrices of `m * n` unsigned long integer elements.
