@@ -54,3 +54,17 @@ If the message size is 0 bytes (or a small number), time will basically denote t
 9. MPI program that multiplies two long integers stored as a couple of vectors.
 
 10. MPI program that computes the matrix of minimum distances in a directed graph using Floyd's algorithm.
+
+---
+
+## CUDA
+
+1. CUDA program that computes the sum of two vectors with `n` elements each.
+
+2. CUDA program that computes the sum of two matrices of `m * n` size.
+
+3. CUDA program that computes the sum of two vectors with `n` real elements expressed in simple precision, one of them multiplied by an `alpha` constant (operation saxpy).
+
+4. CUDA program that computes the product of a matrix of dimensions `m * n` and a vector with `n` real elements expressed in simple precision.
+
+5. CUDA program that computes the product of two matrices of `m * n` unsigned long integer elements.
